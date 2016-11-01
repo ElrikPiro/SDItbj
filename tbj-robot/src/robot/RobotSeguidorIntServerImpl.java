@@ -5,6 +5,7 @@ import corba.khepera.escenario.EscenarioD;
 import corba.khepera.robot.PosicionD;
 
 import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.jms.Topic;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
@@ -21,7 +22,7 @@ import corba.camara.*;
  *
  * Let the Eclipse complete operations code by choosing 'Add unimplemented methods'.
  */
-public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA {
+public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA implements javax.jms.MessageListener {
 
     org.omg.CORBA.ORB orb;
     CamaraInt camara;
@@ -146,6 +147,12 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
 
 	@Override
 	public void ModificarPosicion(PosicionD arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onMessage(Message arg0) {
 		// TODO Auto-generated method stub
 		
 	}
