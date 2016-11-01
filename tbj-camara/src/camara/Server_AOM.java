@@ -80,7 +80,7 @@ public class Server_AOM {
 			// ---- Uncomment below to enable Naming Service access. ----
 			 org.omg.CORBA.Object ncobj = orb.resolve_initial_references("NameService");
 			 NamingContextExt nc = NamingContextExtHelper.narrow(ncobj);
-			 nc.rebind(nc.to_name("Camara"), obj);
+			 nc.rebind(nc.to_name("Camara"), obj);//a modificar posteriormente
 
 			//PrintWriter ps = new PrintWriter(new FileOutputStream(new File("server.ior")));
 			//ps.println(orb.object_to_string(obj));

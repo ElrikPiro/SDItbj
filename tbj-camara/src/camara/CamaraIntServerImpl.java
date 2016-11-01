@@ -16,8 +16,8 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA {
    private org.omg.PortableServer.POA poa_;
    private org.omg.CORBA.ORB orb_;
 
-   private LinkedList listaRobots = new LinkedList();
-   private LinkedList listaEstados = new LinkedList();
+   private LinkedList<String> listaRobots = new LinkedList<String>();
+   private LinkedList<EstadoRobotD> listaEstados = new LinkedList<EstadoRobotD>();
    InstantaneaD instantanea;
    private int nrobots;
    private IPYPortD ipyport;
@@ -54,8 +54,6 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA {
     	if(indexRobot==-1) {listaRobots.add(IORrob);indexRobot=listaRobots.indexOf(IORrob);}
     	//ret = new suscripcionD(indexRobot,ipyport, null);
     	return ret;
-       
-
     }
     
     public void start(){
@@ -82,12 +80,12 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA {
          while(true){
            listaEstados.clear();
            listaFallos.clear();
-           Object i[] = listaRobots.toArray();
-           for (int j=0; j<i.length;j++ ){
+           Iterator<String> i = listaRobots.iterator();
+           for (; i.hasNext(); ){
              try {
                 //EJERCICIO: invocar via CORBA el metodo ObtenerEstado y anyadir
                //el estado del robot correspondiente a la lista de estados          
-            	 ior = (String) i[j];
+            	 ior = (String) i.next();
             	 org.omg.CORBA.Object ncobj=orb_.resolve_initial_references("NameService");
      			 NamingContextExt nc = NamingContextExtHelper.narrow(ncobj);
     			 org.omg.CORBA.Object obj = nc.resolve_str(ior);
