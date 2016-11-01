@@ -2,12 +2,18 @@ package camara;
 
 import corba.instantanea.*;
 import corba.khepera.escenario.EscenarioD;
+import corba.khepera.escenario.RectanguloD;
 import corba.camara.*;
+import corba.consola.ConsolaInt;
 import corba.robot.*;
+import khepera.escenario.Escenario;
+
 import java.util.LinkedList;
+import java.util.Properties;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.ObjectMessage;
 import javax.jms.Topic;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
@@ -15,6 +21,7 @@ import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 import javax.naming.Context;
+import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.omg.CosNaming.NamingContextExt;
@@ -39,14 +46,14 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
    private org.omg.CORBA.ORB orb_;
 
    private LinkedList<String> listaRobots = new LinkedList<String>();
+   private LinkedList<String> listaConsolas = new LinkedList<String>();
    private LinkedList<EstadoRobotD> listaEstados = new LinkedList<EstadoRobotD>();
    InstantaneaD instantanea;
+   EscenarioD escenario = new EscenarioD();
    private int nrobots;
    private IPYPortD ipyport;
 
-    public
-
-    CamaraIntServerImpl(org.omg.CORBA.ORB orb, org.omg.PortableServer.POA poa, IPYPortD iport) 
+    public CamaraIntServerImpl(org.omg.CORBA.ORB orb, org.omg.PortableServer.POA poa, IPYPortD iport) 
     {
         orb_ = orb;
         poa_ = poa;
@@ -56,6 +63,13 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
         
      // look up the ConnectionFactory
         try {
+        	Properties env = new Properties( );
+            // ActiveMQ
+            env.put(Context.INITIAL_CONTEXT_FACTORY, "org.apache.activemq.jndi.ActiveMQInitialContextFactory");
+            env.put(Context.PROVIDER_URL, "tcp://localhost:61616");
+            
+            context = new InitialContext(env);
+        	
         	factory = (TopicConnectionFactory) context.lookup(factoryName);
 		
         // look up the Destination
@@ -82,6 +96,10 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+        escenario.recs = new RectanguloD[1];
+        escenario.nrecs = 1;
+        escenario.color = 1;
+        escenario.recs[0] = new RectanguloD(100,100, 0, 0, 0);
     }
 
 
@@ -120,18 +138,24 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
       //------------------------------------------------------------------------------
       public CamaraDifusion(IPYPortD iport){
          //difusion = new Difusion(iport);
+    	  
       }
 
       //------------------------------------------------------------------------------
       public void run(){
         corba.instantanea.EstadoRobotDHolder st = new EstadoRobotDHolder();
         String ior=null;
-        LinkedList listaFallos = new LinkedList();
+        LinkedList<String> listaFallos = new LinkedList<String>();
+        LinkedList<String> bufferRobots = (LinkedList<String>) listaEstados.clone();
+        LinkedList<String> bufferConsolas = (LinkedList<String>) listaEstados.clone();
+        
 
          while(true){
+        	 bufferRobots = (LinkedList<String>) listaEstados.clone();
+             bufferConsolas = (LinkedList<String>) listaEstados.clone();
            listaEstados.clear();
            listaFallos.clear();
-           Iterator<String> i = listaRobots.iterator();
+           Iterator<String> i = bufferRobots.iterator();
            for (; i.hasNext(); ){
              try {
                 //EJERCICIO: invocar via CORBA el metodo ObtenerEstado y anyadir
@@ -143,6 +167,7 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
     			 
      			 RobotSeguidorInt status = corba.robot.RobotSeguidorIntHelper.narrow(obj);
      			 status.ObtenerEstado(st);
+     			 status.ModificarEscenario(escenario);
      			 listaEstados.add(st.value);
      			 
              } catch (Exception  e){
@@ -152,9 +177,29 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
             } 
           }
            
+           i = bufferConsolas.iterator();
+           for (; i.hasNext(); ){
+             try {
+                //EJERCICIO: invocar via CORBA el metodo ObtenerEstado y anyadir
+               //el estado del robot correspondiente a la lista de estados          
+            	 ior = (String) i.next();
+            	 org.omg.CORBA.Object ncobj=orb_.resolve_initial_references("NameService");
+     			 NamingContextExt nc = NamingContextExtHelper.narrow(ncobj);
+    			 org.omg.CORBA.Object obj = nc.resolve_str(ior);
+    			 
+     			 ConsolaInt status = corba.consola.ConsolaIntHelper.narrow(obj);
+     			 if(!status.estoyviva()) throw new Exception();
+     			status.ModificarEscenario(escenario);
+     			 
+             } catch (Exception  e){
+                 System.out.println("Detectado fallo Consola: " + ior );
+                 listaFallos.add(ior);
+            } 
+          }
+           
            Object i1[] = listaFallos.toArray();
            for (int j=0; j<i1.length;j++ )
-               listaRobots.remove(i1[j]);
+               BajaRobot((String) i1[j]);
            
            //EJERCICIO: crear una instantanea a partir de la lista de estados de los robots. 
            instantanea = new InstantaneaD((EstadoRobotD[]) listaEstados.toArray(new EstadoRobotD[0])); 
@@ -175,62 +220,96 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
 	@Override
 	public void BajaConsola(String arg0) {
 		// TODO Auto-generated method stub
-		
+		listaConsolas.remove(arg0);
 	}
 
 
 	@Override
 	public void BajaRobot(String arg0) {
 		// TODO Auto-generated method stub
-		
+		if(!listaRobots.remove(arg0))BajaConsola(arg0);
 	}
 
 
 	@Override
 	public void ModificarEscenario(EscenarioD arg0) {
-		// TODO Auto-generated method stub
-		
+		escenario = arg0;
+		//ListaSuscripcionD lista = ObtenerLista();
+		String ior;
+		/*for(int i = 0;i<(lista.IORconsolas.length+lista.IORrobots.length);i++){
+			if(i<lista.IORconsolas.length){
+				ior = lista.IORconsolas[i];
+       	 		org.omg.CORBA.Object ncobj=orb_.resolve_initial_references("NameService");
+       	 		NamingContextExt nc = NamingContextExtHelper.narrow(ncobj);
+				org.omg.CORBA.Object obj = nc.resolve_str(ior);
+			 
+				ConsolaInt status = corba.consola.ConsolaIntHelper.narrow(obj);
+				status.ModificarEscenario(arg0);
+			}else{
+				ior = lista.IORrobots[i-lista.IORrobots.length];
+           	 	org.omg.CORBA.Object ncobj=orb_.resolve_initial_references("NameService");
+    			NamingContextExt nc = NamingContextExtHelper.narrow(ncobj);
+    			org.omg.CORBA.Object obj = nc.resolve_str(ior);
+   			 
+    			RobotSeguidorInt status = corba.robot.RobotSeguidorIntHelper.narrow(obj);
+    			status.ModificarEscenario(arg0);
+			}
+		}*/
 	}
 
 
 	@Override
 	public EscenarioD ObtenerEscenario() {
 		// TODO Auto-generated method stub
-		return null;
+		return escenario;
 	}
 
 
 	@Override
 	public IPYPortD ObtenerIPYPortDifusion() {
 		// TODO Auto-generated method stub
-		return null;
+		return ipyport;
 	}
 
 
 	@Override
 	public InstantaneaD ObtenerInstantanea() {
 		// TODO Auto-generated method stub
-		return null;
+		return instantanea;
 	}
 
 
 	@Override
 	public ListaSuscripcionD ObtenerLista() {
 		// TODO Auto-generated method stub
-		return null;
+		ListaSuscripcionD lista = new ListaSuscripcionD();
+		//lista.IORconsolas = listaConsolas.toArray();
+		//lista.IORrobots = listaRobots.toArray();
+		return lista;
 	}
 
 
 	@Override
 	public suscripcionD SuscribirConsola(String arg0) {
-		// TODO Auto-generated method stub
-		return null;
+		suscripcionD ret = null;
+    	int indexRobot = listaConsolas.indexOf(arg0);
+    	if(indexRobot==-1) {listaConsolas.add(arg0);indexRobot=listaConsolas.indexOf(arg0);}
+    	//ret = new suscripcionD(indexRobot,ipyport, null);
+    	return ret;
 	}
 
 
 	@Override
 	public void onMessage(Message arg0) {
 		// TODO Auto-generated method stub
-		
+		/*if(false){
+			ObjectMessage obj = (ObjectMessage) arg0;
+			try {
+				instantanea = (InstantaneaD) obj.getObject();
+			} catch (JMSException e) {
+			// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}*/ //esto es para cuando haya que implementar integridad
 	}
 }

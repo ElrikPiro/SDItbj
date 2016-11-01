@@ -12,6 +12,8 @@ import khepera.robot.IzqDer;
 import khepera.robot.KheperaInt;
 import khepera.robot.Polares;
 
+import java.util.Properties;
+
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.ObjectMessage;
@@ -22,6 +24,7 @@ import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 import javax.naming.Context;
+import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.omg.CosNaming.NamingContextExt;
@@ -69,6 +72,13 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
 	 */
 	public RobotSeguidorIntServerImpl() {
 		try {
+			Properties env = new Properties( );
+            // ActiveMQ
+            env.put(Context.INITIAL_CONTEXT_FACTORY, "org.apache.activemq.jndi.ActiveMQInitialContextFactory");
+            env.put(Context.PROVIDER_URL, "tcp://localhost:61616");
+            
+            context = new InitialContext(env);
+			
         	factory = (TopicConnectionFactory) context.lookup(factoryName);
 		
         // look up the Destination
@@ -96,9 +106,6 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
 			e.printStackTrace();
 		}
 		
-		Escenario e = new Escenario(camara.ObtenerEscenario());
-		robotillo = new khepera.robot.RobotKhepera(inicio, e, 0);
-		
 	}
 
 	public void ObtenerEstado(EstadoRobotDHolder est) {
@@ -119,6 +126,8 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
 	}
 	
     public void start(){
+    	Escenario e = new Escenario(camara.ObtenerEscenario());
+		robotillo = new khepera.robot.RobotKhepera(inicio, e, 0);
         new RobotDifusion().start();
     }
 
