@@ -3,9 +3,13 @@ package robot;
 import corba.instantanea.*;
 import corba.khepera.escenario.EscenarioD;
 import corba.khepera.robot.PosicionD;
+import corba.robot.RobotSeguidorInt;
+import khepera.escenario.Escenario;
+import khepera.robot.KheperaInt;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.ObjectMessage;
 import javax.jms.Topic;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
@@ -14,6 +18,9 @@ import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 import javax.naming.Context;
 import javax.naming.NamingException;
+
+import org.omg.CosNaming.NamingContextExt;
+import org.omg.CosNaming.NamingContextExtHelper;
 
 import corba.camara.*;
 
@@ -29,7 +36,12 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
 
     String minombre;
     int miid;
+    int milider=miid;
     String miIOR;
+    PosicionD inicio = new PosicionD(10,10);
+    PosicionD objetivo = new PosicionD(50,50);
+    EscenarioD esc;
+    khepera.robot.RobotKhepera robotillo;
     
     private InstantaneaD instantanea;
     
@@ -75,6 +87,10 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		Escenario e = new Escenario(camara.ObtenerEscenario());
+		robotillo = new khepera.robot.RobotKhepera(inicio, e, 0);
+		
 	}
 
 	public void ObtenerEstado(EstadoRobotDHolder est) {
@@ -82,7 +98,14 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
 
 		//EJERCICIO: componer la instantanea a partir de EstadoRobotD y retornarla
 	        //return _r;
-		//EstadoRobotD _r = new EstadoRobotD(minombre,miid,miIOR, null, null, null, miid);
+		est.value = new corba.instantanea.EstadoRobotD();
+		est.value.id = miid;
+		est.value.idLider = milider;
+		est.value.IORrob = miIOR;
+		est.value.posObj = robotillo.posicionRobot().centro;
+		est.value.puntrob = robotillo.posicionRobot();
+		est.value.refrob = this._this();
+		
 	        //est.value = _r; // new corba.instantanea.EstadoRobotD();
 		
 	}
@@ -98,7 +121,7 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
     class RobotDifusion extends Thread{
 
       //private Difusion difusion;
-      private EstadoRobotD sr;
+      
       private suscripcionD sus;
 
       public void run(){
@@ -107,53 +130,43 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
       //EJERCICIO: crear la difusion
     	  //difusion = new Difusion(sus.iport);
     	  miid=sus.id;
-
-        while(true){
-           //EJERCICIO: recibir instantanea
-        	//instantanea = (InstantaneaD) difusion.receiveObject();
-           //EJERCICIO: iterar sobre la lista de estados, imprimiendo el nombre de
-           //todos los robots cuyo estado figura en la instantanea.
-        	for(int v = 0; v<instantanea.estadorobs.length;v++){
-	            sr = instantanea.estadorobs[v];
-        		System.out.println("Robot " + sr.id + " : " + sr.nombre);
-        	}
-	          
-          try{
-            Thread.sleep(400);
-          }catch(InterruptedException e){
-            e.printStackTrace();
-          }
-        }
       }
     }
 
 	@Override
 	public void ModificarEscenario(EscenarioD arg0) {
-		// TODO Auto-generated method stub
-		
+		robotillo = new khepera.robot.RobotKhepera(robotillo.posicionRobot().centro, new Escenario(arg0), 0);		
 	}
 
 	@Override
 	public void ModificarLider(int arg0) {
-		// TODO Auto-generated method stub
-		
+		milider=arg0;
 	}
 
 	@Override
 	public void ModificarObjetivo(PosicionD arg0) {
-		// TODO Auto-generated method stub
-		
+		objetivo = arg0;
 	}
 
 	@Override
 	public void ModificarPosicion(PosicionD arg0) {
-		// TODO Auto-generated method stub
-		
+		robotillo.fijarPosicion(arg0);
 	}
 
 	@Override
 	public void onMessage(Message arg0) {
-		// TODO Auto-generated method stub
-		
+		EstadoRobotD sr;
+		boolean imiin = false;
+		ObjectMessage obj = (ObjectMessage) arg0;
+		try {
+			instantanea = (InstantaneaD) obj.getObject();
+		} catch (JMSException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	for(int v = 0; v<instantanea.estadorobs.length && !imiin;v++){
+            sr = instantanea.estadorobs[v];
+            imiin = sr.nombre == minombre;
+    	}
 	}
 }
