@@ -4,8 +4,13 @@ import corba.instantanea.*;
 import corba.khepera.escenario.EscenarioD;
 import corba.khepera.robot.PosicionD;
 import corba.robot.RobotSeguidorInt;
+import khepera.control.Braitenberg;
+import khepera.control.Destino;
+import khepera.control.Trayectoria;
 import khepera.escenario.Escenario;
+import khepera.robot.IzqDer;
 import khepera.robot.KheperaInt;
+import khepera.robot.Polares;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -42,6 +47,9 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
     PosicionD objetivo = new PosicionD(50,50);
     EscenarioD esc;
     khepera.robot.RobotKhepera robotillo;
+    Trayectoria tra;
+    Destino dst = new Destino();
+    Braitenberg bra = new Braitenberg();
     
     private InstantaneaD instantanea;
     
@@ -130,6 +138,25 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
       //EJERCICIO: crear la difusion
     	  //difusion = new Difusion(sus.iport);
     	  miid=sus.id;
+    	  Polares posActual;
+    	  PuntosRobotD puntosAct;
+    	  IzqDer nv, nv2;
+    	  
+    	  do{}while(instantanea==null);
+    	  while(true){
+    		  posActual = robotillo.posicionPolares();
+    		  puntosAct = robotillo.posicionRobot();
+    		  
+    		  tra = new Trayectoria(posActual,objetivo);
+    		  float[] ls = robotillo.leerSensores();
+    		  nv = dst.calcularVelocidad(tra);
+    		  nv2 = bra.calcularVelocidad(ls);
+    		  
+    		  nv.izq += nv2.izq/90; nv.der+=nv2.der/90;
+    		  robotillo.fijarVelocidad(nv.izq, nv.der);
+    		  robotillo.avanzar();
+    		  try{Thread.sleep(400);}catch(Exception e){}
+    	  }
       }
     }
 
@@ -146,6 +173,7 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
 	@Override
 	public void ModificarObjetivo(PosicionD arg0) {
 		objetivo = arg0;
+		milider=miid;
 	}
 
 	@Override
@@ -164,9 +192,11 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-    	for(int v = 0; v<instantanea.estadorobs.length && !imiin;v++){
+    	for(int v = 0; v<instantanea.estadorobs.length;v++){
             sr = instantanea.estadorobs[v];
-            imiin = sr.nombre == minombre;
+            imiin = (sr.nombre == minombre) || imiin;//esto servira mas adelante para la tolerancia a fallos
+            if(milider!=miid && sr.id==milider) objetivo = sr.puntrob.centro;
     	}
+    	
 	}
 }
