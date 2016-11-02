@@ -53,6 +53,7 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
    private int lastIdRobot;
    private int lastIdConsola;
    private IPYPortD ipyport;
+   private int escmodifier=3;
 
 
     public CamaraIntServerImpl(org.omg.CORBA.ORB orb, org.omg.PortableServer.POA poa, IPYPortD iport) 
@@ -175,7 +176,7 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
     			 
      			 RobotSeguidorInt status = corba.robot.RobotSeguidorIntHelper.narrow(obj);
      			 status.ObtenerEstado(st);
-     			 status.ModificarEscenario(escenario);
+     			if(escmodifier<3)status.ModificarEscenario(escenario);
      			 listaEstados.add(st.value);
      			 
              } catch (Exception  e){
@@ -198,7 +199,7 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
     			 
      			 ConsolaInt status = corba.consola.ConsolaIntHelper.narrow(obj);
      			 if(!status.estoyviva()) throw new Exception();
-     			status.ModificarEscenario(escenario);
+     			if(escmodifier<3)status.ModificarEscenario(escenario);
      			 
              } catch (Exception  e){
                  System.out.println("Detectado fallo Consola: " + ior );
@@ -220,6 +221,7 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
            try {
 			ObjectMessage snd = pub_session.createObjectMessage(instantanea);
 			publisher.publish(dest,snd);
+			if(escmodifier<3)escmodifier++;
 		} catch (JMSException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -253,6 +255,7 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
 		escenario = arg0;
 		ListaSuscripcionD lista = ObtenerLista();
 		String ior;
+		escmodifier=0;
 		/*for(int i = 0;i<(lista.IORconsolas.length+lista.IORrobots.length);i++){
 			if(i<lista.IORconsolas.length){
 				ior = lista.IORconsolas[i];
