@@ -40,7 +40,7 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
     TopicSession pub_session = null;
     TopicSubscriber subscriber = null;
     TopicPublisher publisher = null;
-    String destName = "228.7.7.7_4001";
+    String destName = "228.7.7.7_7010";
 	
    private org.omg.PortableServer.POA poa_;
    private org.omg.CORBA.ORB orb_;
@@ -217,6 +217,13 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
            //EJERCICIO: difundir la instantanea 
            //Difusion dif = new Difusion(ipyport);
            //dif.sendObject(instantanea);
+           try {
+			ObjectMessage snd = pub_session.createObjectMessage(instantanea);
+			publisher.publish(dest,snd);
+		} catch (JMSException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
            
            try{
                Thread.sleep(400);
@@ -244,7 +251,7 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
 	@Override
 	public void ModificarEscenario(EscenarioD arg0) {
 		escenario = arg0;
-		//ListaSuscripcionD lista = ObtenerLista();
+		ListaSuscripcionD lista = ObtenerLista();
 		String ior;
 		/*for(int i = 0;i<(lista.IORconsolas.length+lista.IORrobots.length);i++){
 			if(i<lista.IORconsolas.length){

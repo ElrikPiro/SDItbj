@@ -65,7 +65,7 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
     TopicSession pub_session = null;
     TopicSubscriber subscriber = null;
     TopicPublisher publisher = null;
-    String destName = "228.7.7.7_4001";
+    String destName = "228.7.7.7_7010";
     
 	/**
 	 * Constructor for RobotSeguidorIntServerImpl 
