@@ -50,8 +50,10 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
    private LinkedList<EstadoRobotD> listaEstados = new LinkedList<EstadoRobotD>();
    InstantaneaD instantanea;
    EscenarioD escenario = new EscenarioD();
-   private int nrobots;
+   private int lastIdRobot;
+   private int lastIdConsola;
    private IPYPortD ipyport;
+
 
     public CamaraIntServerImpl(org.omg.CORBA.ORB orb, org.omg.PortableServer.POA poa, IPYPortD iport) 
     {
@@ -59,7 +61,8 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
         poa_ = poa;
         ipyport = new IPYPortD(iport.ip, iport.port);
         
-        nrobots = 0;
+        lastIdRobot = 0;
+        lastIdConsola = 0;
         
      // look up the ConnectionFactory
         try {
@@ -120,8 +123,11 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
     {
     	suscripcionD ret = null;
     	int indexRobot = listaRobots.indexOf(IORrob);
-    	if(indexRobot==-1) {listaRobots.add(IORrob);indexRobot=listaRobots.indexOf(IORrob);}
-    	//ret = new suscripcionD(indexRobot,ipyport, null);
+    	if(indexRobot==-1) {
+    		listaRobots.add(IORrob);
+    	}
+   		indexRobot=lastIdRobot++;
+    	ret = new suscripcionD(indexRobot,ipyport, escenario);
     	return ret;
     }
     
@@ -144,26 +150,28 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
       //------------------------------------------------------------------------------
       public void run(){
         corba.instantanea.EstadoRobotDHolder st = new EstadoRobotDHolder();
+        st.value=new EstadoRobotD();
         String ior=null;
         LinkedList<String> listaFallos = new LinkedList<String>();
-        LinkedList<String> bufferRobots = (LinkedList<String>) listaEstados.clone();
-        LinkedList<String> bufferConsolas = (LinkedList<String>) listaEstados.clone();
+        LinkedList<String> bufferRobots;
+        LinkedList<String> bufferConsolas;
         
 
          while(true){
-        	 bufferRobots = (LinkedList<String>) listaEstados.clone();
-             bufferConsolas = (LinkedList<String>) listaEstados.clone();
+        	 bufferRobots = (LinkedList<String>) listaRobots.clone();
+             bufferConsolas = (LinkedList<String>) listaConsolas.clone();
            listaEstados.clear();
            listaFallos.clear();
-           Iterator<String> i = bufferRobots.iterator();
-           for (; i.hasNext(); ){
+           
+           for (Iterator<String> i = bufferRobots.iterator(); i.hasNext(); ){
              try {
                 //EJERCICIO: invocar via CORBA el metodo ObtenerEstado y anyadir
                //el estado del robot correspondiente a la lista de estados          
-            	 ior = (String) i.next();
-            	 org.omg.CORBA.Object ncobj=orb_.resolve_initial_references("NameService");
-     			 NamingContextExt nc = NamingContextExtHelper.narrow(ncobj);
-    			 org.omg.CORBA.Object obj = nc.resolve_str(ior);
+            	 ior = i.next();
+            	 //org.omg.CORBA.Object ncobj=orb_.resolve_initial_references("NameService");
+     			 //NamingContextExt nc = NamingContextExtHelper.narrow(ncobj);
+    			 
+            	 org.omg.CORBA.Object obj = orb_.string_to_object(ior);
     			 
      			 RobotSeguidorInt status = corba.robot.RobotSeguidorIntHelper.narrow(obj);
      			 status.ObtenerEstado(st);
@@ -172,20 +180,21 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
      			 
              } catch (Exception  e){
                  System.out.println("Detectado fallo Robot: " + ior );
+                 e.printStackTrace();
                  listaFallos.add(ior);
                
             } 
           }
            
-           i = bufferConsolas.iterator();
-           for (; i.hasNext(); ){
+           //i = bufferConsolas.iterator();
+           for (Iterator<String> i = bufferConsolas.iterator(); i.hasNext(); ){
              try {
                 //EJERCICIO: invocar via CORBA el metodo ObtenerEstado y anyadir
                //el estado del robot correspondiente a la lista de estados          
             	 ior = (String) i.next();
-            	 org.omg.CORBA.Object ncobj=orb_.resolve_initial_references("NameService");
-     			 NamingContextExt nc = NamingContextExtHelper.narrow(ncobj);
-    			 org.omg.CORBA.Object obj = nc.resolve_str(ior);
+            	 // org.omg.CORBA.Object ncobj=orb_.resolve_initial_references("NameService");
+     			 // NamingContextExt nc = NamingContextExtHelper.narrow(ncobj);
+            	 org.omg.CORBA.Object obj = orb_.string_to_object(ior);
     			 
      			 ConsolaInt status = corba.consola.ConsolaIntHelper.narrow(obj);
      			 if(!status.estoyviva()) throw new Exception();
@@ -193,6 +202,7 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
      			 
              } catch (Exception  e){
                  System.out.println("Detectado fallo Consola: " + ior );
+                 e.printStackTrace();
                  listaFallos.add(ior);
             } 
           }
@@ -293,8 +303,8 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
 	public suscripcionD SuscribirConsola(String arg0) {
 		suscripcionD ret = null;
     	int indexRobot = listaConsolas.indexOf(arg0);
-    	if(indexRobot==-1) {listaConsolas.add(arg0);indexRobot=listaConsolas.indexOf(arg0);}
-    	//ret = new suscripcionD(indexRobot,ipyport, null);
+    	if(indexRobot==-1) {listaConsolas.add(arg0);}
+    	ret = new suscripcionD(lastIdConsola++,ipyport, escenario);
     	return ret;
 	}
 

@@ -83,12 +83,10 @@ public class Server_AOM {
 		          System.out.println("Identificador: " + servant.toString());
 			         //EJERCICIO: convertir la referencia al robot en un IOR en formato String 
 		         
-
+		          if (args.length>0) servant.minombre = args[0]; else servant.minombre="Robot";
 		          servant.orb = orb;
 		          servant.camara = camara;
-		          if (args.length>0) servant.minombre = args[0]; else servant.minombre="Robot";
-		          servant.miIOR = servant.minombre+Math.random();
-		          nc.rebind(nc.to_name(servant.miIOR), obj);
+		          servant.miIOR = orb.object_to_string(obj);
 		          ok=1;
 		        } catch(Exception ex) {
 		          System.out.println("El robot no se registro bien en la camara. Reintentando...");

@@ -113,13 +113,18 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
 
 		//EJERCICIO: componer la instantanea a partir de EstadoRobotD y retornarla
 	        //return _r;
-		est.value = new corba.instantanea.EstadoRobotD();
-		est.value.id = miid;
-		est.value.idLider = milider;
-		est.value.IORrob = miIOR;
-		est.value.posObj = robotillo.posicionRobot().centro;
-		est.value.puntrob = robotillo.posicionRobot();
-		est.value.refrob = this._this();
+
+		est.value = new corba.instantanea.EstadoRobotD(new String(this.minombre),miid,miIOR,
+						this._this(),
+						robotillo.posicionRobot(),robotillo.posicionRobot().centro,
+						milider);
+//		est.value.id = miid;
+//		est.value.idLider = milider;
+//		est.value.IORrob = miIOR;
+//		est.value.posObj = robotillo.posicionRobot().centro;
+//		est.value.puntrob = robotillo.posicionRobot();
+//		est.value.refrob = this._this();
+//		est.value.nombre = this.minombre;
 		
 	        //est.value = _r; // new corba.instantanea.EstadoRobotD();
 		
@@ -147,6 +152,10 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
       //EJERCICIO: crear la difusion
     	  //difusion = new Difusion(sus.iport);
     	  miid=sus.id;
+    	  esc=sus.esc;
+  		robotillo = new khepera.robot.RobotKhepera(robotillo.posicionRobot().centro, new Escenario(esc), 0);		
+   	  
+    	  
     	  Polares posActual;
     	  PuntosRobotD puntosAct;
     	  IzqDer nv, nv2;
@@ -171,7 +180,8 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
 
 	@Override
 	public void ModificarEscenario(EscenarioD arg0) {
-		robotillo = new khepera.robot.RobotKhepera(robotillo.posicionRobot().centro, new Escenario(arg0), 0);		
+		esc=arg0;
+		robotillo = new khepera.robot.RobotKhepera(robotillo.posicionRobot().centro, new Escenario(esc), 0);		
 	}
 
 	@Override
