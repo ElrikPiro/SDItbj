@@ -186,7 +186,7 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
              } catch (Exception  e){
                  System.out.println("Detectado fallo Robot: " + ior );
                  e.printStackTrace();
-                 //listaFallos.add(ior);
+                 listaFallos.add(ior);
                
             } 
           }

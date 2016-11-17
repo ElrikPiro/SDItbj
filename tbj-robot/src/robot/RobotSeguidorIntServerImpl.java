@@ -154,7 +154,7 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
       //EJERCICIO: crear la difusion
     	  //difusion = new Difusion(sus.iport);
     	  miid=sus.id;
-    	  milider=sus.id;
+    	  milider=sus.id-(miid!=0?1:0);
     	  esc=sus.esc;
   		robotillo = new khepera.robot.RobotKhepera(robotillo.posicionRobot().centro, new Escenario(esc), 400);		
    	  
