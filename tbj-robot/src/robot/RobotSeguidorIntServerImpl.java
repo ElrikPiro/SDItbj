@@ -47,7 +47,7 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
     int milider=miid;
     String miIOR;
     PosicionD inicio = new PosicionD(10,10);
-    PosicionD objetivo = new PosicionD(50,50);
+    PosicionD objetivo = new PosicionD(150,150);
     EscenarioD esc;
     khepera.robot.RobotKhepera robotillo;
     Trayectoria tra;
@@ -70,41 +70,8 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
 	/**
 	 * Constructor for RobotSeguidorIntServerImpl 
 	 */
-	public RobotSeguidorIntServerImpl() {
-		try {
-			Properties env = new Properties( );
-            // ActiveMQ
-            env.put(Context.INITIAL_CONTEXT_FACTORY, "org.apache.activemq.jndi.ActiveMQInitialContextFactory");
-            env.put(Context.PROVIDER_URL, "tcp://localhost:61616");
-            
-            context = new InitialContext(env);
-			
-        	factory = (TopicConnectionFactory) context.lookup(factoryName);
+	public RobotSeguidorIntServerImpl(/*org.omg.CORBA.ORB orb, org.omg.PortableServer.POA poa*/) {
 		
-        // look up the Destination
-        	dest = (Topic) context.lookup("dynamicTopics/"+destName);
-        // create the connection
-        	connection = factory.createTopicConnection();
-        	connection.setClientID(minombre+"/"+destName);
-        // setId
-        // create the sessions
-        	sus_session = connection.createTopicSession(false, javax.jms.Session.AUTO_ACKNOWLEDGE);
-        	pub_session = connection.createTopicSession(false, javax.jms.Session.AUTO_ACKNOWLEDGE);
-        // create the publisher
-        	publisher = pub_session.createPublisher(dest);
-        // create the receiver (take into account if should be durable)
-        	subscriber = sus_session.createSubscriber(dest);
-        // set message listener
-        	subscriber.setMessageListener(this);
-        // start the connection, to enable message receipt
-        	connection.start();
-        } catch (NamingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JMSException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		
 	}
 
@@ -133,6 +100,41 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
     public void start(){
     	Escenario e = new Escenario(camara.ObtenerEscenario());
 		robotillo = new khepera.robot.RobotKhepera(inicio, e, 0);
+		try {
+			//_orb = orb;_poa = poa;
+			Properties env = new Properties( );
+            // ActiveMQ
+            env.put(Context.INITIAL_CONTEXT_FACTORY, "org.apache.activemq.jndi.ActiveMQInitialContextFactory");
+            env.put(Context.PROVIDER_URL, "tcp://localhost:61616");
+            
+            context = new InitialContext(env);
+			
+        	factory = (TopicConnectionFactory) context.lookup(factoryName);
+		
+        // look up the Destination
+        	dest = (Topic) context.lookup("dynamicTopics/"+destName);
+        // create the connection
+        	connection = factory.createTopicConnection();
+        	connection.setClientID(minombre+"/"+destName);
+        // setId
+        // create the sessions
+        	sus_session = connection.createTopicSession(false, javax.jms.Session.AUTO_ACKNOWLEDGE);
+        	pub_session = connection.createTopicSession(false, javax.jms.Session.AUTO_ACKNOWLEDGE);
+        // create the publisher
+        	publisher = pub_session.createPublisher(dest);
+        // create the receiver (take into account if should be durable)
+        	subscriber = sus_session.createSubscriber(dest);
+        // set message listener
+        	subscriber.setMessageListener(this);
+        // start the connection, to enable message receipt
+        	connection.start();
+        } catch (NamingException ex) {
+			// TODO Auto-generated catch block
+			ex.printStackTrace();
+		} catch (JMSException ex) {
+			// TODO Auto-generated catch block
+			ex.printStackTrace();
+		}
         new RobotDifusion().start();
     }
 

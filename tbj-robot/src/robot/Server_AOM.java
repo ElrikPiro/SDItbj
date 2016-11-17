@@ -30,7 +30,7 @@ public class Server_AOM {
 		props.setProperty("org.omg.CORBA.ORBClass", "com.sun.corba.se.internal.POA.POAORB");
 		props.setProperty("org.omg.CORBA.ORBSingletonClass", "com.sun.corba.se.internal.corba.ORBSingleton");
 		// Solo si se cambia el host 
-		props.put("org.omg.CORBA.ORBInitialHost", "localhost");
+		props.put("org.omg.CORBA.ORBInitialHost", "127.0.0.1");
 		// Solo si se cambia el port 
 		props.put("org.omg.CORBA.ORBInitialPort", "1050");
 		try {
@@ -83,7 +83,7 @@ public class Server_AOM {
 		          System.out.println("Identificador: " + servant.toString());
 			         //EJERCICIO: convertir la referencia al robot en un IOR en formato String 
 		         
-		          if (args.length>0) servant.minombre = args[0]; else servant.minombre="Robot";
+		          if (args.length>0) servant.minombre = args[0]; else servant.minombre="Robot"+Math.random();
 		          servant.orb = orb;
 		          servant.camara = camara;
 		          servant.miIOR = orb.object_to_string(obj);

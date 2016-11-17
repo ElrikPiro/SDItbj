@@ -150,8 +150,7 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
 
       //------------------------------------------------------------------------------
       public void run(){
-        corba.instantanea.EstadoRobotDHolder st = new EstadoRobotDHolder();
-        st.value=new EstadoRobotD();
+        corba.instantanea.EstadoRobotDHolder st;
         String ior=null;
         LinkedList<String> listaFallos = new LinkedList<String>();
         LinkedList<String> bufferRobots;
@@ -164,7 +163,7 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
            listaEstados.clear();
            listaFallos.clear();
            
-           for (Iterator<String> i = bufferRobots.iterator(); i.hasNext(); ){
+           for (Iterator<String> i = listaRobots.iterator(); i.hasNext(); ){
              try {
                 //EJERCICIO: invocar via CORBA el metodo ObtenerEstado y anyadir
                //el estado del robot correspondiente a la lista de estados          
@@ -175,6 +174,8 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
             	 org.omg.CORBA.Object obj = orb_.string_to_object(ior);
     			 
      			 RobotSeguidorInt status = corba.robot.RobotSeguidorIntHelper.narrow(obj);
+     			 st = new EstadoRobotDHolder();
+     			 st.value=new EstadoRobotD();
      			 status.ObtenerEstado(st);
      			if(escmodifier<3)status.ModificarEscenario(escenario);
      			 listaEstados.add(st.value);
