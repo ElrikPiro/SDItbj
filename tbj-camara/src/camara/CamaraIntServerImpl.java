@@ -126,8 +126,9 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
     	int indexRobot = listaRobots.indexOf(IORrob);
     	if(indexRobot==-1) {
     		listaRobots.add(IORrob);
+    		indexRobot = listaRobots.indexOf(IORrob);
     	}
-   		indexRobot=lastIdRobot++;
+   		lastIdRobot++;
     	ret = new suscripcionD(indexRobot,ipyport, escenario);
     	return ret;
     }
@@ -311,11 +312,15 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
 
 
 	@Override
-	public suscripcionD SuscribirConsola(String arg0) {
+	public suscripcionD SuscribirConsola(String IORrob) {
 		suscripcionD ret = null;
-    	int indexRobot = listaConsolas.indexOf(arg0);
-    	if(indexRobot==-1) {listaConsolas.add(arg0);}
-    	ret = new suscripcionD(lastIdConsola++,ipyport, escenario);
+    	int indexRobot = listaConsolas.indexOf(IORrob);
+    	if(indexRobot==-1) {
+    		listaConsolas.add(IORrob);
+    		indexRobot = listaConsolas.indexOf(IORrob);
+    	}
+   		lastIdConsola++;
+    	ret = new suscripcionD(indexRobot,ipyport, escenario);
     	return ret;
 	}
 
