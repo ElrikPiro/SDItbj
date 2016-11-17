@@ -177,7 +177,7 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
      			 status.ObtenerEstado(st);
      			if(escmodifier<3)status.ModificarEscenario(escenario);
      			EstadoRobotD toad = new EstadoRobotD(new String(st.value.nombre),st.value.id,new String(st.value.IORrob),
-						null,
+						null,//TODO: testear si esto tira con "status"
 						st.value.puntrob,st.value.posObj,
 						st.value.idLider);
      			
