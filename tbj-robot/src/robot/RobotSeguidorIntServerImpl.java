@@ -44,7 +44,7 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
 
     String minombre;
     int miid;
-    int milider=miid;
+    int milider;
     String miIOR;
     PosicionD inicio = new PosicionD(10,10);
     PosicionD objetivo = new PosicionD(150,150);
@@ -82,7 +82,7 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
 	        //return _r;
 
 		est.value = new corba.instantanea.EstadoRobotD(new String(this.minombre),miid,miIOR,
-						this._this(),
+						this._this(orb),
 						robotillo.posicionRobot(),robotillo.posicionRobot().centro,
 						milider);
 //		est.value.id = miid;
@@ -99,7 +99,7 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
 	
     public void start(){
     	Escenario e = new Escenario(camara.ObtenerEscenario());
-		robotillo = new khepera.robot.RobotKhepera(inicio, e, 0);
+		robotillo = new khepera.robot.RobotKhepera(inicio, e, 400);
 		try {
 			//_orb = orb;_poa = poa;
 			Properties env = new Properties( );
@@ -154,8 +154,9 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
       //EJERCICIO: crear la difusion
     	  //difusion = new Difusion(sus.iport);
     	  miid=sus.id;
+    	  milider=sus.id;
     	  esc=sus.esc;
-  		robotillo = new khepera.robot.RobotKhepera(robotillo.posicionRobot().centro, new Escenario(esc), 0);		
+  		robotillo = new khepera.robot.RobotKhepera(robotillo.posicionRobot().centro, new Escenario(esc), 400);		
    	  
     	  
     	  Polares posActual;
@@ -166,7 +167,6 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
     	  while(true){
     		  posActual = robotillo.posicionPolares();
     		  puntosAct = robotillo.posicionRobot();
-    		  
     		  tra = new Trayectoria(posActual,objetivo);
     		  float[] ls = robotillo.leerSensores();
     		  nv = dst.calcularVelocidad(tra);
@@ -174,7 +174,6 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
     		  
     		  nv.izq += nv2.izq/90; nv.der+=nv2.der/90;
     		  robotillo.fijarVelocidad(nv.izq, nv.der);
-    		  robotillo.avanzar();
     		  try{Thread.sleep(400);}catch(Exception e){}
     	  }
       }
@@ -183,7 +182,7 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
 	@Override
 	public void ModificarEscenario(EscenarioD arg0) {
 		esc=arg0;
-		robotillo = new khepera.robot.RobotKhepera(robotillo.posicionRobot().centro, new Escenario(esc), 0);		
+		robotillo = new khepera.robot.RobotKhepera(robotillo.posicionRobot().centro, new Escenario(esc), 400);		
 	}
 
 	@Override

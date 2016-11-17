@@ -61,7 +61,7 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
         orb_ = orb;
         poa_ = poa;
         ipyport = new IPYPortD(iport.ip, iport.port);
-        
+
         lastIdRobot = 0;
         lastIdConsola = 0;
         
@@ -123,13 +123,9 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
 	public suscripcionD SuscribirRobot(String IORrob)
     {
     	suscripcionD ret = null;
-    	int indexRobot = listaRobots.indexOf(IORrob);
-    	if(indexRobot==-1) {
-    		listaRobots.add(IORrob);
-    		indexRobot = listaRobots.indexOf(IORrob);
-    	}
-   		lastIdRobot++;
-    	ret = new suscripcionD(indexRobot,ipyport, escenario);
+    	listaRobots.add(IORrob);
+    	listaRobots.add(IORrob);
+    	ret = new suscripcionD(lastIdRobot++,ipyport, escenario);
     	return ret;
     }
     
@@ -159,42 +155,49 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
         
 
          while(true){
-        	 bufferRobots = (LinkedList<String>) listaRobots.clone();
-             bufferConsolas = (LinkedList<String>) listaConsolas.clone();
+        	 bufferRobots = listaRobots;
+             bufferConsolas = listaConsolas;
            listaEstados.clear();
            listaFallos.clear();
            
-           for (Iterator<String> i = listaRobots.iterator(); i.hasNext(); ){
+           for (Iterator<String> i = bufferRobots.iterator(); i.hasNext();){
              try {
-                //EJERCICIO: invocar via CORBA el metodo ObtenerEstado y anyadir
-               //el estado del robot correspondiente a la lista de estados          
             	 ior = i.next();
+                //EJERCICIO: invocar via CORBA el metodo ObtenerEstado y anyadir
+               //el estado del robot correspondiente a la lista de estados
+            	 
             	 //org.omg.CORBA.Object ncobj=orb_.resolve_initial_references("NameService");
      			 //NamingContextExt nc = NamingContextExtHelper.narrow(ncobj);
     			 
             	 org.omg.CORBA.Object obj = orb_.string_to_object(ior);
     			 
      			 RobotSeguidorInt status = corba.robot.RobotSeguidorIntHelper.narrow(obj);
-     			 st = new EstadoRobotDHolder();
-     			 st.value=new EstadoRobotD();
+     			st = new EstadoRobotDHolder();
+     			
      			 status.ObtenerEstado(st);
      			if(escmodifier<3)status.ModificarEscenario(escenario);
-     			 listaEstados.add(st.value);
+     			EstadoRobotD toad = new EstadoRobotD(new String(st.value.nombre),st.value.id,new String(st.value.IORrob),
+						null,
+						st.value.puntrob,st.value.posObj,
+						st.value.idLider);
+     			
+     			listaEstados.add(toad);
      			 
              } catch (Exception  e){
                  System.out.println("Detectado fallo Robot: " + ior );
                  e.printStackTrace();
-                 listaFallos.add(ior);
+                 //listaFallos.add(ior);
                
             } 
           }
            
            //i = bufferConsolas.iterator();
-           for (Iterator<String> i = bufferConsolas.iterator(); i.hasNext(); ){
+           for (Iterator<String> i = bufferConsolas.iterator(); i.hasNext();){
              try {
+            	 ior = i.next();
                 //EJERCICIO: invocar via CORBA el metodo ObtenerEstado y anyadir
                //el estado del robot correspondiente a la lista de estados          
-            	 ior = (String) i.next();
+            	 
             	 // org.omg.CORBA.Object ncobj=orb_.resolve_initial_references("NameService");
      			 // NamingContextExt nc = NamingContextExtHelper.narrow(ncobj);
             	 org.omg.CORBA.Object obj = orb_.string_to_object(ior);
