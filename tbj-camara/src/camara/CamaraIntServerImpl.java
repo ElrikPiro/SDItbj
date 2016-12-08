@@ -10,6 +10,7 @@ import khepera.escenario.Escenario;
 
 import java.util.LinkedList;
 import java.util.Properties;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -45,8 +46,10 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
    private org.omg.PortableServer.POA poa_;
    private org.omg.CORBA.ORB orb_;
 
-   private LinkedList<String> listaRobots = new LinkedList<String>();
-   private LinkedList<String> listaConsolas = new LinkedList<String>();
+   private LinkedBlockingQueue<String> listaRobots = new LinkedBlockingQueue<String>();
+   //private LinkedBlockingQueue<String> buffRobots = new LinkedBlockingQueue<String>();
+   private LinkedBlockingQueue<String> listaConsolas = new LinkedBlockingQueue<String>();
+   //private LinkedBlockingQueue<String> buffConsolas = new LinkedBlockingQueue<String>();
    private LinkedList<EstadoRobotD> listaEstados = new LinkedList<EstadoRobotD>();
    InstantaneaD instantanea;
    EscenarioD escenario = new EscenarioD();
@@ -150,17 +153,13 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
         corba.instantanea.EstadoRobotDHolder st;
         String ior=null;
         LinkedList<String> listaFallos = new LinkedList<String>();
-        LinkedList<String> bufferRobots;
-        LinkedList<String> bufferConsolas;
         
 
          while(true){
-        	 bufferRobots = listaRobots;
-             bufferConsolas = listaConsolas;
            listaEstados.clear();
            listaFallos.clear();
            
-           for (Iterator<String> i = bufferRobots.iterator(); i.hasNext();){
+           for (Iterator<String> i = listaRobots.iterator(); i.hasNext();){
              try {
             	 ior = i.next();
                 //EJERCICIO: invocar via CORBA el metodo ObtenerEstado y anyadir
@@ -192,7 +191,7 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
           }
            
            //i = bufferConsolas.iterator();
-           for (Iterator<String> i = bufferConsolas.iterator(); i.hasNext();){
+           for (Iterator<String> i = listaConsolas.iterator(); i.hasNext();){
              try {
             	 ior = i.next();
                 //EJERCICIO: invocar via CORBA el metodo ObtenerEstado y anyadir
@@ -317,13 +316,11 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
 	@Override
 	public suscripcionD SuscribirConsola(String IORrob) {
 		suscripcionD ret = null;
-    	int indexRobot = listaConsolas.indexOf(IORrob);
-    	if(indexRobot==-1) {
+    	if(!listaConsolas.contains(IORrob)) {
     		listaConsolas.add(IORrob);
-    		indexRobot = listaConsolas.indexOf(IORrob);
     	}
    		lastIdConsola++;
-    	ret = new suscripcionD(indexRobot,ipyport, escenario);
+    	ret = new suscripcionD(lastIdConsola,ipyport, escenario);
     	return ret;
 	}
 
