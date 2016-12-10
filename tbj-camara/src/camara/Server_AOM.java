@@ -80,8 +80,27 @@ public class Server_AOM {
 			// ---- Uncomment below to enable Naming Service access. ----
 			 org.omg.CORBA.Object ncobj = orb.resolve_initial_references("NameService");
 			 NamingContextExt nc = NamingContextExtHelper.narrow(ncobj);
-			 nc.rebind(nc.to_name("Camara"), obj);//a modificar posteriormente
-
+			 do{
+			 try{
+			 	 org.omg.CORBA.Object camobj = nc.resolve_str("Camara");
+				 CamaraInt camara = CamaraIntHelper.narrow(camobj);
+				 camara.ObtenerInstantanea();
+			 }catch(Exception e){	 
+				 servant.background = false;
+				 nc.rebind(nc.to_name("Camara"), obj);
+			 }
+			 }while(servant.background);
+			 
+			 /*do{
+			 try{
+				 nc.rebind(nc.to_name("Camara"), obj);//a modificar posteriormente
+				 servant.background = false;
+				 System.out.println("Camera set up as Server.");
+			 }catch(Exception e){
+				 servant.background = true;
+				 if(servant.background) System.out.println("Camera set up as Listener.");
+			 }
+		}while(servant.background);*/
 			//PrintWriter ps = new PrintWriter(new FileOutputStream(new File("server.ior")));
 			//ps.println(orb.object_to_string(obj));
 			//ps.close();

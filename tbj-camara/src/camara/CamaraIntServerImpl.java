@@ -42,6 +42,7 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
     TopicSubscriber subscriber = null;
     TopicPublisher publisher = null;
     String destName = "228.7.7.7_7010";
+    Boolean background = true;
 	
    private org.omg.PortableServer.POA poa_;
    private org.omg.CORBA.ORB orb_;
@@ -83,7 +84,7 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
         	dest = (Topic) context.lookup("dynamicTopics/"+destName);
         // create the connection
         	connection = factory.createTopicConnection();
-        	connection.setClientID("Camara"+"/"+destName);
+        	connection.setClientID("Camara"+Math.random()+"/"+destName);
         // setId
         // create the sessions
         	sus_session = connection.createTopicSession(false, javax.jms.Session.AUTO_ACKNOWLEDGE);
@@ -153,8 +154,8 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
         corba.instantanea.EstadoRobotDHolder st;
         String ior=null;
         LinkedList<String> listaFallos = new LinkedList<String>();
-        
 
+		
          while(true){
            listaEstados.clear();
            listaFallos.clear();
@@ -223,7 +224,7 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
            //Difusion dif = new Difusion(ipyport);
            //dif.sendObject(instantanea);
            try {
-			ObjectMessage snd = pub_session.createObjectMessage(instantanea);
+        	ObjectMessage snd = pub_session.createObjectMessage(instantanea);
 			publisher.publish(dest,snd);
 			if(escmodifier<3)escmodifier++;
 		} catch (JMSException e1) {
@@ -328,14 +329,19 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
 	@Override
 	public void onMessage(Message arg0) {
 		// TODO Auto-generated method stub
-		/*if(false){
+		if(background){
 			ObjectMessage obj = (ObjectMessage) arg0;
 			try {
 				instantanea = (InstantaneaD) obj.getObject();
+				listaRobots.clear();
+				for(int i = 0;i<instantanea.estadorobs.length;i++){
+					listaRobots.add(instantanea.estadorobs[i].IORrob);
+				}
+				System.out.println("Instantanea received");
 			} catch (JMSException e) {
 			// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}*/ //esto es para cuando haya que implementar integridad
+		} //esto es para cuando haya que implementar integridad
 	}
 }
