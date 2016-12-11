@@ -128,7 +128,6 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
     {
     	suscripcionD ret = null;
     	listaRobots.add(IORrob);
-    	listaRobots.add(IORrob);
     	ret = new suscripcionD(lastIdRobot++,ipyport, escenario);
     	return ret;
     }
@@ -336,7 +335,9 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
 				listaRobots.clear();
 				for(int i = 0;i<instantanea.estadorobs.length;i++){
 					listaRobots.add(instantanea.estadorobs[i].IORrob);
+					
 				}
+				lastIdRobot = listaRobots.size();
 				System.out.println("Instantanea received");
 			} catch (JMSException e) {
 			// TODO Auto-generated catch block
