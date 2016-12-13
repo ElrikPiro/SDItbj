@@ -85,6 +85,7 @@ public class Server_AOM {
 			 	 org.omg.CORBA.Object camobj = nc.resolve_str("Camara");
 				 CamaraInt camara = CamaraIntHelper.narrow(camobj);
 				 camara.ObtenerInstantanea();
+				 Thread.sleep(1000);
 			 }catch(Exception e){	 
 				 servant.background = false;
 				 nc.rebind(nc.to_name("Camara"), obj);

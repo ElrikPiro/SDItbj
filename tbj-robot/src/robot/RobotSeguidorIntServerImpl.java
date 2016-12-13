@@ -27,8 +27,11 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.omg.CORBA.ORBPackage.InvalidName;
 import org.omg.CosNaming.NamingContextExt;
 import org.omg.CosNaming.NamingContextExtHelper;
+import org.omg.CosNaming.NamingContextPackage.CannotProceed;
+import org.omg.CosNaming.NamingContextPackage.NotFound;
 
 import corba.camara.*;
 
@@ -216,6 +219,19 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
             sr = instantanea.estadorobs[v];
             imiin = (sr.nombre == minombre) || imiin;//esto servira mas adelante para la tolerancia a fallos
             if(milider!=miid && sr.id==milider) objetivo = sr.puntrob.centro;
+    	}
+    	if(!imiin){
+    		org.omg.CORBA.Object ncobj;
+			try {
+				ncobj = orb.resolve_initial_references("NameService");
+				NamingContextExt nc = NamingContextExtHelper.narrow(ncobj);
+				org.omg.CORBA.Object camobj = nc.resolve_str("Camara");
+				camara = CamaraIntHelper.narrow(camobj);
+			} catch (InvalidName | NotFound | CannotProceed | org.omg.CosNaming.NamingContextPackage.InvalidName e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			camara.SuscribirRobot(miIOR);
     	}
     	
 	}
