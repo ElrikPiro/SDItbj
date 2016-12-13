@@ -220,7 +220,7 @@ public class RobotSeguidorIntServerImpl extends corba.robot.RobotSeguidorIntPOA 
             imiin = (sr.nombre == minombre) || imiin;//esto servira mas adelante para la tolerancia a fallos
             if(milider!=miid && sr.id==milider) objetivo = sr.puntrob.centro;
     	}
-    	if(!imiin){
+    	if(imiin){
     		org.omg.CORBA.Object ncobj;
 			try {
 				ncobj = orb.resolve_initial_references("NameService");

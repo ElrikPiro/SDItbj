@@ -47,15 +47,15 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
    private org.omg.PortableServer.POA poa_;
    private org.omg.CORBA.ORB orb_;
 
-   private LinkedBlockingQueue<String> listaRobots = new LinkedBlockingQueue<String>();
+   LinkedBlockingQueue<String> listaRobots = new LinkedBlockingQueue<String>();
    //private LinkedBlockingQueue<String> buffRobots = new LinkedBlockingQueue<String>();
-   private LinkedBlockingQueue<String> listaConsolas = new LinkedBlockingQueue<String>();
+   LinkedBlockingQueue<String> listaConsolas = new LinkedBlockingQueue<String>();
    //private LinkedBlockingQueue<String> buffConsolas = new LinkedBlockingQueue<String>();
    private LinkedList<EstadoRobotD> listaEstados = new LinkedList<EstadoRobotD>();
    InstantaneaD instantanea;
    EscenarioD escenario = new EscenarioD();
-   private int lastIdRobot;
-   private int lastIdConsola;
+   int lastIdRobot;
+   int lastIdConsola;
    private IPYPortD ipyport;
    private int escmodifier=3;
 
@@ -307,8 +307,8 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
 	public ListaSuscripcionD ObtenerLista() {
 		// TODO Auto-generated method stub
 		ListaSuscripcionD lista = new ListaSuscripcionD();
-		//lista.IORconsolas = listaConsolas.toArray();
-		//lista.IORrobots = listaRobots.toArray();
+		lista.IORconsolas = listaConsolas.toArray(new String[0]);
+		lista.IORrobots = listaRobots.toArray(new String[0]);
 		return lista;
 	}
 
@@ -328,7 +328,7 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
 	@Override
 	public void onMessage(Message arg0) {
 		// TODO Auto-generated method stub
-		if(background){
+		/*if(background){
 			ObjectMessage obj = (ObjectMessage) arg0;
 			try {
 				instantanea = (InstantaneaD) obj.getObject();
@@ -343,6 +343,6 @@ public class CamaraIntServerImpl extends corba.camara.CamaraIntPOA implements ja
 			// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		} //esto es para cuando haya que implementar integridad
+		} *///esto es para cuando haya que implementar integridad
 	}
 }

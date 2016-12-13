@@ -80,16 +80,32 @@ public class Server_AOM {
 			// ---- Uncomment below to enable Naming Service access. ----
 			 org.omg.CORBA.Object ncobj = orb.resolve_initial_references("NameService");
 			 NamingContextExt nc = NamingContextExtHelper.narrow(ncobj);
+			 CamaraInt camara = null;
+			 org.omg.CORBA.Object camobj = nc.resolve_str("Camara");
+		     camara = CamaraIntHelper.narrow(camobj);
 			 do{
-			 try{
-			 	 org.omg.CORBA.Object camobj = nc.resolve_str("Camara");
-				 CamaraInt camara = CamaraIntHelper.narrow(camobj);
-				 camara.ObtenerInstantanea();
-				 Thread.sleep(1000);
-			 }catch(Exception e){	 
-				 servant.background = false;
-				 nc.rebind(nc.to_name("Camara"), obj);
-			 }
+				 
+				 try{
+				     camara.ObtenerInstantanea();
+				     servant.background = true;
+				 }catch(Exception e){
+					 nc.rebind(nc.to_name("Camara"), obj);
+					 servant.background = false;
+				 }
+				 if(servant.background){
+					 Thread.sleep(1000);
+					 try{ListaSuscripcionD subs = camara.ObtenerLista();
+					 servant.listaRobots.clear();
+					 servant.lastIdRobot = 0;
+					 for(int i = 0;i<subs.IORrobots.length;i++){
+						 servant.SuscribirRobot(subs.IORrobots[i]);
+					 }
+					 servant.listaConsolas.clear();
+					 for(int i = 0;i<subs.IORconsolas.length;i++){
+						 servant.SuscribirConsola(subs.IORconsolas[i]);
+					 }
+					 }catch(Exception e){}
+				 }
 			 }while(servant.background);
 			 
 			 /*do{
